@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -23,6 +24,18 @@ type Client struct {
 // NewClient creates a new instance of client
 func NewClient(uri string, user string, pw string) *Client {
 	c := &Client{uri, make(http.Header), &http.Client{}}
+
+	if user == "" && pw == "" {
+		u, err := ReadConfig(uri)
+		if err != nil {
+			fmt.Println("No username / password specified or found in ~/.netrc")
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		user = u.Login
+		pw = u.Password
+	}
 
 	if len(user) > 0 && len(pw) > 0 {
 		a := user + ":" + pw
